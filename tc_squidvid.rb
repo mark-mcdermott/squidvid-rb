@@ -128,6 +128,48 @@ class TestSquidvid < Test::Unit::TestCase
     assert_equal(120,end_point,"start point calculation is wrong")
   end
 
+  def test_get_total_length
+    end_points=[60,120,180]
+    total_length=Squidvid.new().get_total_length(end_points)
+    assert_not_nil(total_length, "total_length is nil" )
+    assert_kind_of(Numeric,total_length, "total_length is not a number" )
+    assert_equal(180,total_length,"total length calculation is wrong")
+  end
+
+  def test_get_output_filename
+    total_length=240
+    output_base_filename='stream'
+    current_date_mmddyyhhmm='0623211537'
+    output_filename=Squidvid.new().get_output_filename(total_length,output_base_filename,current_date_mmddyyhhmm)
+    assert_not_nil(output_filename, "output_filename is nil" )
+    assert_kind_of(String,output_filename, "output_filename is not a string" )
+    assert_equal('stream-4-mins-0623211537.mp4',output_filename,"output_filename is incorrect")
+  end
+
+  def test_get_vid_str
+    vid_skip_to_point='00:01:00'
+    total_length=240
+    vid_path='/Users/markmcdermott/Movies/youtube/long/beach-3-hr-skip-first-min.mp4'
+    vid_str_actual=Squidvid.new().get_vid_str(vid_skip_to_point, total_length, vid_path)
+    vid_str_expected="-ss 00:01:00 -t 240 -i /Users/markmcdermott/Movies/youtube/long/beach-3-hr-skip-first-min.mp4"
+    assert_not_nil(vid_str_actual, "vid_str_actual is nil" )
+    assert_kind_of(String,vid_str_actual, "vid_str_actual is not a string" )
+    assert_equal(vid_str_expected,vid_str_actual,"vid_str_actual string is incorrect")
+  end
+
+  def test_get_songs_str
+    num_songs=2
+    i=1 #(song two)
+    song_dir='/Users/markmcdermott/Desktop/misc/lofi/playlist-1'
+    lengths=[60,60]
+    songs=['dancer.mp3','test.mp3']
+    song_str_actual=Squidvid.new().get_songs_str(num_songs, song_dir,lengths,songs)
+    song_str_expected="-i /Users/markmcdermott/Desktop/misc/lofi/playlist-1/dancer.mp3 -i /Users/markmcdermott/Desktop/misc/lofi/playlist-1/test.mp3 "
+    assert_not_nil(song_str_actual, "song_str_expected is nil" )
+    assert_kind_of(String,song_str_actual, "song_str_expected is not a string" )
+    assert_equal(song_str_expected,song_str_actual,"song_str_expected string is incorrect")
+  end
+
   def test_delete_temp_files
     temp_folder="temp"
     Squidvid.new.delete_temp_files(temp_folder)
