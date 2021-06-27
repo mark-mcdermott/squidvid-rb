@@ -154,7 +154,7 @@ class TestSquidvid < Test::Unit::TestCase
     vid_str_expected="-ss 00:01:00 -t 240 -i /Users/markmcdermott/Movies/youtube/long/beach-3-hr-skip-first-min.mp4"
     assert_not_nil(vid_str_actual, "vid_str_actual is nil" )
     assert_kind_of(String,vid_str_actual, "vid_str_actual is not a string" )
-    assert_equal(vid_str_expected,vid_str_actual,"vid_str_actual string is incorrect")
+    assert_equal(vid_str_expected,vid_str_actual,"vid_str_actual string is incorrect. Actual: #{vid_str_actual}")
   end
 
   def test_get_songs_str
@@ -206,7 +206,7 @@ class TestSquidvid < Test::Unit::TestCase
   def test_safe_sys_call_first_line
     song_path='/Users/markmcdermott/Desktop/misc/lofi/playlist-1/10k-ty-beat.mp3'
     length=Squidvid.new.safe_sys_call_first_line("ffprobe -show_entries stream=duration -of compact=p=0:nk=1 -v fatal #{song_path}")
-    assert_equal("91.637551",length, "Open3 ffprobe call not properly returning ntourage 10k-ty-beat.mp3 song length")
+    assert_equal("91.637551",length, "Open3 ffprobe call not properly returning ntourage 10k-ty-beat.mp3 song length (actual length: #{length} seconds)")
   end
 
   def test_ffprobe_length_call

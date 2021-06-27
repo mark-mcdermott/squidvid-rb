@@ -168,6 +168,7 @@ class Squidvid
     image_filepath="#{temp_folder}/#{image_filename}"
     check_conditions(image_filepath => 'var_exists,is_string,ends_in_png')
     cmd="ffmpeg -i #{song_path} #{image_filepath} -y -loglevel quiet" # create the album art png image
+    # cmd="ffmpeg -i #{song_path} #{image_filepath} -y" # create the album art png image # for debugging
     safe_sys_call(cmd)
     check_post_conds(image_filepath => 'file_exists')
     image_filename
@@ -266,16 +267,12 @@ class Squidvid
   # @return {Decimal} number of seconds, with four decimal places
   #####################################################
   def get_start_point(song_num,this_lengths)
-    if song_num == nil || !song_num.is_a?(Numeric) || song_num < 0
-      raise ArgumentError.new("song_num param is nil or is not a number or less than zero")
-    end
+    check_args(song_num => 'var_exists,is_number,gte_0')
     this_start_point=0
     (0..song_num - 1).each do |j|
       this_start_point = this_start_point + this_lengths[j]
     end
-    if this_start_point == nil || !this_start_point.is_a?(Numeric) || this_start_point < 0
-      raise "start point is nil, not a number or less than zero"
-    end
+    check_post_conds(this_start_point => 'var_exists,is_number,gte_0')
     this_start_point
   end
 
@@ -290,16 +287,9 @@ class Squidvid
   # @return {Decimal} end point of current song in seconds
   #####################################################
   def get_end_point(start_point, song_length)
-    if start_point == nil || !start_point.is_a?(Numeric) || start_point < 0
-      raise ArgumentError.new("start_point param is nil or is not a number or less than zero")
-    end
-    if song_length == nil || !song_length.is_a?(Numeric) || song_length < 0
-      raise ArgumentError.new("song_length param is nil or is not a number or less than zero")
-    end
+    check_args(start_point => 'var_exists,is_number,gte_0', song_length => 'var_exists,is_number,gte_0')
     this_end_point = start_point + song_length
-    if this_end_point == nil || !this_end_point.is_a?(Numeric) || this_end_point < 0
-      raise "this_end_point param is nil or is not a number or less than zero"
-    end
+    check_post_conds(this_end_point => 'var_exists,is_number,gte_0')
     this_end_point
   end
 
@@ -318,9 +308,7 @@ class Squidvid
     else
       this_total_length = end_points[-1]
     end
-    if this_total_length == nil || !this_total_length.is_a?(Numeric) || this_total_length <= 0
-      raise "this_total_length param is nil or is not a number or less than or equal to zero"
-    end
+    check_post_conds(this_total_length => 'var_exists,is_number,gte_0')
     this_total_length
   end
 
@@ -334,20 +322,17 @@ class Squidvid
   #####################################################
   def get_output_filename(total_length,output_base_filename,current_date_mmddyyhhmm)
     # current_date=Time.now.strftime("%m%d%y%H%M") #MMDDYYHHMM
-    if total_length == nil || !total_length.is_a?(Numeric) || total_length < 0
-          raise ArgumentError.new("total_length param is nil or is not a number or less than zero")
-    end
-    if output_base_filename == nil || !output_base_filename.is_a?(String) || output_base_filename.length == 0
-      raise ArgumentError.new("output_base_filename is nil, not a string or is empty string")
-    end
-    if current_date_mmddyyhhmm == nil || !current_date_mmddyyhhmm.is_a?(String) || current_date_mmddyyhhmm.length != 10 || !/\A\d+\z/.match(current_date_mmddyyhhmm)
+    check_args(
+      total_length => '1 var_exists,is_number,gte_0',
+      output_base_filename => '2 var_exists,is_string',
+      current_date_mmddyyhhmm => '3 var_exists,is_string'
+    )
+    if current_date_mmddyyhhmm.length != 10 || !/\A\d+\z/.match(current_date_mmddyyhhmm)
       raise ArgumentError.new("current_date_mmddyyhhmm is nil or not a string or is not 10 chars long or is not all numbers")
     end
     mins_long=total_length/60
     output_filename="#{output_base_filename}-#{mins_long}-mins-#{current_date_mmddyyhhmm}.mp4"
-    if output_filename == nil || !output_filename.is_a?(String) || !output_filename.end_with?(".mp4")
-      raise ArgumentError.new("output_filename param is nil or is not a string or doesn't end in .mp4")
-    end
+    check_post_conds(output_filename => 'var_exists,is_string,ends_in_mp4')
     output_filename
   end
 
@@ -363,19 +348,13 @@ class Squidvid
   # @return {String} ffmpeg video input argument string
   #####################################################
   def get_vid_str(vid_skip_to_point, total_length, vid_path)
-    if vid_skip_to_point == nil || !vid_skip_to_point.is_a?(String) || vid_skip_to_point.length != 8
-      raise ArgumentError.new("vid_skip_to_point param is nil or is not a string or has length not equal to eight")
-    end
-    if total_length == nil || !total_length.is_a?(Numeric) || total_length < 0
-      raise ArgumentError.new("total_length param is nil or is not a number or less than zero")
-    end
-    if vid_path == nil || !vid_path.is_a?(String) || vid_path.length == 0 || !vid_path.end_with?(".mp4")
-      raise ArgumentError.new("vid_skip_to_point param is nil or is not a string or equal to zero or does not end in mp4")
-    end
+    check_args(
+      vid_skip_to_point => 'var_exists,is_string',
+      total_length => 'var_exists,is_number,gte_0',
+      vid_path => 'var_exists,is_string,ends_in_mp4'
+    )
     vid_str="-ss #{vid_skip_to_point} -t #{total_length} -i #{vid_path}"
-    if vid_str == nil || !vid_str.is_a?(String) || vid_str.length == 0 || !vid_str.end_with?(".mp4")
-      raise "vid_str param is nil or is not a string or empty or does not end in mp4"
-    end
+    check_post_conds(vid_str => 'var_exists,is_string,ends_in_mp4')
     vid_str
   end
 
@@ -392,18 +371,12 @@ class Squidvid
   # @return {String} ffmpeg songs input argument string
   #####################################################
   def get_songs_str(num_songs, song_dir, lengths, songs, quick_test=false)
-    if num_songs == nil || !num_songs.is_a?(Numeric) || num_songs < 1
-      raise ArgumentError.new("num_songs param is nil or is not a number or is less than one")
-    end
-    if song_dir == nil || !song_dir.is_a?(String)
-      raise ArgumentError.new("song_dir param is nil or is not a string or doesn't end in .mp3")
-    end
-    if lengths == nil || !lengths.kind_of?(Array)
-      raise ArgumentError.new("lengths param is nil or is not an array")
-    end
-    if songs == nil || !songs.kind_of?(Array)
-      raise ArgumentError.new("songs param is nil or is not an array")
-    end
+    check_args(
+      num_songs => 'var_exists,is_number,gte_0',
+      song_dir => 'var_exists,is_string',
+      lengths => 'var_exists,is_array',
+      songs => 'var_exists,is_array'
+    )
     input_songs_str = ''
     (0..num_songs - 1).each do |i|
       if quick_test==true
@@ -412,9 +385,7 @@ class Squidvid
         input_songs_str += "-i #{song_dir}/#{songs[i]} "
       end
     end
-    if input_songs_str == nil || !input_songs_str.is_a?(String) || input_songs_str.length < 1
-      raise ArgumentError.new("input_songs_str param is nil or is not a string or has a length of less than one")
-    end
+    check_post_conds(input_songs_str => 'var_exists,is_string')
     input_songs_str
   end
 
@@ -445,15 +416,11 @@ class Squidvid
   #####################################################
   def delete_temp_files(temp_folder)
     temp_folder = temp_folder + '/'
-    if !Dir.exist?("#{temp_folder}")
-      raise "output_folder (#{temp_folder}) does not exist"
-    end
+    check_args(temp_folder => 'folder_exists')
     Dir.glob("#{temp_folder}/*.*").each { |file| File.delete(file)}  # delete all files in temp folder
     files=Dir[File.join("#{temp_folder}", '**', '*')]
     num_files=files.count { |file| File.file?(file) }
-    if num_files != 0
-      raise "temp_folder not empty after running delete_temp_files"
-    end
+    check_post_conds(num_files => 'gte_0')
   end
 
   #####################################################
@@ -466,15 +433,11 @@ class Squidvid
   # @return none
   #####################################################
   def delete_test_output_files(output_folder)
-    if !Dir.exist?(output_folder)
-      raise "output_folder (#{output_folder}) does not exist"
-    end
+    check_args(output_folder => 'folder_exists')
     Dir.glob("#{output_folder}/stream-0-mins*").each { |file| File.delete(file)}
     files=Dir[File.join("#{output_folder}", '**', '*')]
-    numFiles=files.count { |file| File.file?(file) }
-    if numFiles != 0
-      raise "output_folder not empty after running delete_temp_files"
-    end
+    num_files=files.count { |file| File.file?(file) }
+    check_post_conds(num_files => 'gte_0')
   end
 
   #####################################################
@@ -625,12 +588,21 @@ class Squidvid
       end
     when 'gte_0'
       if var < 0
-        raise "var #{var} is less than zero"
+        raise "var is less than zero"
+      end
+    when 'ne_8'
+      if var != 8
+        raise "var is not equal to eight"
       end
     when 'is_boolean'
       if var != true && var != false
-        raise "var #{var} is not boolean"
+        raise "var is not boolean"
       end
+    when 'is_array'
+      if !var.kind_of?(Array)
+        raise "var is not an array"
+      end
+      when 'length_gte_1'
     when 'is_1_or_2'
       if var != 1 && var != 2
         raise "var must be a 1 or a 2, but is #{var}"
@@ -646,6 +618,10 @@ class Squidvid
     when 'ends_in_mp3'
       if !var.end_with? ".mp3"
         raise "var #{var} doesn't end in .mp3"
+      end
+    when 'ends_in_mp4'
+      if !var.end_with? ".mp4"
+        raise "var #{var} doesn't end in .mp4"
       end
     when 'ends_in_png'
       if !var.end_with? ".png"
@@ -666,7 +642,7 @@ class Squidvid
       path_and_pattern = var
       numFiles=Dir.glob(path_and_pattern).count { |file| File.file?(file) }
       if numFiles != 0
-        raise "folder still has files matching patternchec"
+        raise "folder still has files matching pattern"
       end
 
     end
