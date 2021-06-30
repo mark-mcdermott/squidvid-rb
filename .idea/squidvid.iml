@@ -13,6 +13,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" scope="PROVIDED" name="power_assert (v1.2.0, RVM: ruby-3.0.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rbs (v1.0.4, RVM: ruby-3.0.1) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="test-unit (v3.3.7, RVM: ruby-3.0.1) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="test-unit (v3.4.4, RVM: ruby-3.0.1) [gem]" level="application" />
   </component>
 </module>
